@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
   
     // Auto-show modal if not logged in
-    if (loginModal && localStorage.getItem('jdmLoggedIn') !== 'true') {
+    if (loginModal && storage.getItem('jdmLoggedIn') !== 'true') {
       setTimeout(() => {
         loginModal.style.display = 'flex';
         document.body.classList.add('modal-active');
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (openLogin) {
       openLogin.addEventListener('click', function(e) {
         e.preventDefault();
-        if (localStorage.getItem('jdmLoggedIn') !== 'true') {
+        if (storage.getItem('jdmLoggedIn') !== 'true') {
           loginModal.style.display = 'flex';
           document.body.classList.add('modal-active');
         }
@@ -31,14 +31,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = this.querySelector('input[type="email"]').value;
         const password = this.querySelector('input[type="password"]').value;
         
-        const users = JSON.parse(localStorage.getItem('jdmUsers') || '[]');
+        const users = storage.getItem('jdmUsers') || [];
         const user = users.find(u => u.email === email && u.password === password);
         
         if (user) {
           loginModal.style.display = 'none';
           document.body.classList.remove('modal-active');
-          localStorage.setItem('jdmCurrentUser', JSON.stringify(user));
-          localStorage.setItem('jdmLoggedIn', 'true');
+          storage.setItem('jdmCurrentUser', user);
+          storage.setItem('jdmLoggedIn', 'true');
           showSuccessAlert('Login successful! Welcome back, ' + user.fullName + '!');
           
           // Refresh page to update UI
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
     // Hide modal if already logged in
-    if (loginModal && localStorage.getItem('jdmLoggedIn') === 'true') {
+    if (loginModal && storage.getItem('jdmLoggedIn') === 'true') {
       loginModal.style.display = 'none';
       document.body.classList.remove('modal-active');
     }

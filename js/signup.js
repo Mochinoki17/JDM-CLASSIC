@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
           createdAt: new Date().toISOString()
         };
         
-        const existingUsers = JSON.parse(localStorage.getItem('jdmUsers') || '[]');
+        const existingUsers = storage.getItem('jdmUsers') || [];
         const userExists = existingUsers.find(user => user.email === email);
         
         if (userExists) {
@@ -37,16 +37,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         existingUsers.push(userData);
-        localStorage.setItem('jdmUsers', JSON.stringify(existingUsers));
-        localStorage.setItem('jdmCurrentUser', JSON.stringify(userData));
-        localStorage.setItem('jdmLoggedIn', 'true');
+        storage.setItem('jdmUsers', existingUsers);
+        storage.setItem('jdmCurrentUser', userData);
+        storage.setItem('jdmLoggedIn', 'true');
         
         showSuccessAlert('Account created successfully! Welcome to JDM Classic.');
       });
     }
   
     // Redirect if already logged in
-    if (localStorage.getItem('jdmLoggedIn') === 'true') {
+    if (storage.getItem('jdmLoggedIn') === 'true') {
       showSuccessAlert('You are already logged in! Redirecting to homepage...');
       setTimeout(() => {
         window.location.href = 'index.html';

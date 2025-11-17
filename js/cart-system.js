@@ -1,6 +1,6 @@
-// Cart System functionality - COMPLETE FIXED VERSION (No Double Click Issue)
+// Cart System functionality - UPDATED FOR GITHUB STORAGE
 let cart = [];
-let cartInitialized = false; // Add this flag to prevent multiple initializations
+let cartInitialized = false;
 
 /* ===== AFTERMARKET PARTS DATA ===== */
 const aftermarketParts = {
@@ -34,9 +34,8 @@ const aftermarketParts = {
     ]
 };
 
-// Initialize cart system - FIXED
+// Initialize cart system - UPDATED
 function initCartSystem() {
-    // Prevent multiple initializations
     if (cartInitialized) {
         console.log('Cart system already initialized, skipping...');
         return;
@@ -50,7 +49,7 @@ function initCartSystem() {
     loadCart();
     updateCartUI();
     
-    // Add event listeners to Add to Cart buttons - WITH DELEGATION (FIXED FOR PARTS)
+    // Add event listeners to Add to Cart buttons
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('add-to-cart-btn') || 
             e.target.closest('.add-to-cart-btn')) {
@@ -78,11 +77,10 @@ function initCartSystem() {
         }
     });
 
-    // Checkout button - FIXED
+    // Checkout button
     const checkoutBtn = document.getElementById('checkoutBtn');
     if (checkoutBtn) {
         console.log('Checkout button found, adding listener');
-        // Remove any existing listeners first
         checkoutBtn.replaceWith(checkoutBtn.cloneNode(true));
         document.getElementById('checkoutBtn').addEventListener('click', function(e) {
             e.preventDefault();
@@ -91,7 +89,7 @@ function initCartSystem() {
         });
     }
 
-    // Checkout form - FIXED
+    // Checkout form
     const checkoutForm = document.getElementById('checkoutForm');
     if (checkoutForm) {
         console.log('Checkout form found, adding listener');
@@ -123,7 +121,7 @@ function updateNavigationUserInfo() {
     }
 }
 
-// Add item to cart - FIXED DUPLICATION ISSUE
+// Add item to cart
 function addToCart(car, price, image) {
     console.log('addToCart called with:', car, price, image);
     
@@ -134,7 +132,7 @@ function addToCart(car, price, image) {
         console.log('Increased quantity for existing item');
     } else {
         const newItem = {
-            id: Date.now() + Math.random(), // More unique ID
+            id: Date.now() + Math.random(),
             car: car,
             price: price,
             image: image,
@@ -155,7 +153,6 @@ function removeFromCart(itemId) {
     console.log('removeFromCart called with ID:', itemId);
     console.log('Cart before removal:', cart);
     
-    // Convert itemId to number for comparison
     itemId = Number(itemId);
     
     cart = cart.filter(item => item.id !== itemId);
@@ -172,7 +169,6 @@ function removeFromCart(itemId) {
 function updateQuantity(itemId, change) {
     console.log('updateQuantity called with ID:', itemId, 'change:', change);
     
-    // Convert itemId to number for comparison
     itemId = Number(itemId);
     
     const item = cart.find(item => item.id === itemId);
@@ -193,7 +189,7 @@ function updateQuantity(itemId, change) {
     }
 }
 
-// Update cart UI - FIXED DUPLICATION ISSUE
+// Update cart UI
 function updateCartUI() {
     console.log('updateCartUI called. Cart items:', cart.length);
     
@@ -227,7 +223,6 @@ function updateCartUI() {
             cartSummary.style.display = 'block';
             cartContainer.classList.remove('empty-cart-layout');
             
-            // Clear the container FIRST to prevent duplication
             if (cartItemsList) {
                 cartItemsList.innerHTML = '';
             } else {
@@ -311,10 +306,9 @@ function updateCartSummary() {
     }
 }
 
-// Save cart to localStorage - FIXED with better data handling
+// Save cart to storage - UPDATED
 function saveCart() {
     try {
-        // Remove any duplicate items before saving
         const uniqueCart = [];
         const seenItems = new Set();
         
@@ -327,25 +321,22 @@ function saveCart() {
         });
         
         cart = uniqueCart;
-        localStorage.setItem('jdmCart', JSON.stringify(cart));
-        console.log('Cart saved to localStorage:', cart);
+        storage.setItem('jdmCart', cart);
+        console.log('Cart saved to storage:', cart);
     } catch (error) {
         console.error('Error saving cart:', error);
     }
 }
 
-// Load cart from localStorage - FIXED with duplicate removal
+// Load cart from storage - UPDATED
 function loadCart() {
     try {
-        const savedCart = localStorage.getItem('jdmCart');
+        const savedCart = storage.getItem('jdmCart');
         if (savedCart) {
-            const parsedCart = JSON.parse(savedCart);
-            
-            // Remove duplicates when loading
             const uniqueCart = [];
             const seenItems = new Set();
             
-            parsedCart.forEach(item => {
+            savedCart.forEach(item => {
                 const itemKey = `${item.car}-${item.price}`;
                 if (!seenItems.has(itemKey)) {
                     seenItems.add(itemKey);
@@ -354,10 +345,10 @@ function loadCart() {
             });
             
             cart = uniqueCart;
-            console.log('Cart loaded from localStorage (duplicates removed):', cart);
+            console.log('Cart loaded from storage:', cart);
         } else {
             cart = [];
-            console.log('No cart found in localStorage, initializing empty cart');
+            console.log('No cart found in storage, initializing empty cart');
         }
     } catch (error) {
         console.error('Error loading cart:', error);
@@ -365,7 +356,89 @@ function loadCart() {
     }
 }
 
-// Open checkout modal - UPDATED TO REMOVE BLUR
+// [Rest of cart-system.js remains the same, only storage calls updated...]
+
+// Complete purchase - UPDATED
+function completePurchase(e) {
+    if (e) e.preventDefault();
+    
+    console.log('completePurchase called');
+    
+    if (!isLoggedIn()) {
+        showCustomAlert('Please log in to complete your purchase.');
+        closeCheckoutModal();
+        return false;
+    }
+    
+    if (cart.length === 0) {
+        showCustomAlert('Your cart is empty!');
+        return false;
+    }
+    
+    // Validate form
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const address = document.getElementById('address').value;
+    const city = document.getElementById('city').value;
+    const zipCode = document.getElementById('zipCode').value;
+    
+    if (!fullName || !email || !phone || !address || !city || !zipCode) {
+        showCustomAlert('Please fill out all required shipping information.');
+        return false;
+    }
+    
+    const user = getCurrentUser();
+    const purchases = storage.getItem('jdmPurchases') || {};
+    
+    if (!purchases[user.email]) {
+        purchases[user.email] = [];
+    }
+    
+    // Create purchase records for each cart item
+    cart.forEach(item => {
+        const purchase = {
+            id: Date.now() + Math.random(),
+            car: item.car,
+            basePrice: item.basePrice || item.price,
+            quantity: item.quantity,
+            total: item.price * item.quantity,
+            date: new Date().toISOString(),
+            parts: item.parts || [],
+            shippingInfo: {
+                name: fullName,
+                email: email,
+                phone: phone,
+                address: address,
+                city: city,
+                zipCode: zipCode
+            },
+            paymentMethod: document.querySelector('input[name="payment"]:checked')?.value || 'credit_card'
+        };
+        purchases[user.email].push(purchase);
+    });
+    
+    storage.setItem('jdmPurchases', purchases);
+    
+    // Clear cart
+    cart = [];
+    saveCart();
+    updateCartUI();
+    
+    showSuccessAlert('Purchase completed successfully! You will receive a confirmation email shortly.');
+    closeCheckoutModal();
+    
+    // Reload purchase history if we're on a page that shows it
+    loadPurchaseHistory();
+    
+    // Redirect to member page
+    setTimeout(() => {
+        window.location.href = 'member.html';
+    }, 2000);
+    
+    return false;
+}
+// Open checkout modal - UPDATED
 function openCheckoutModal() {
     console.log('openCheckoutModal called');
     
@@ -430,9 +503,6 @@ function openCheckoutModal() {
         modalContent.style.backdropFilter = 'none';
     }
     
-    // Don't add the blur class to body
-    // document.body.classList.add('modal-active'); // COMMENT THIS OUT
-    
     console.log('Checkout modal should be visible now - NO BLUR');
 }
 
@@ -479,87 +549,6 @@ function updateCheckoutSummary() {
     
     grandTotal += shipping;
     checkoutTotal.textContent = `₱${grandTotal.toLocaleString()}`;
-}
-
-// Complete purchase - FIXED
-function completePurchase(e) {
-    if (e) e.preventDefault();
-    
-    console.log('completePurchase called');
-    
-    if (!isLoggedIn()) {
-        showCustomAlert('Please log in to complete your purchase.');
-        closeCheckoutModal();
-        return false;
-    }
-    
-    if (cart.length === 0) {
-        showCustomAlert('Your cart is empty!');
-        return false;
-    }
-    
-    // Validate form
-    const fullName = document.getElementById('fullName').value;
-    const email = document.getElementById('email').value;
-    const phone = document.getElementById('phone').value;
-    const address = document.getElementById('address').value;
-    const city = document.getElementById('city').value;
-    const zipCode = document.getElementById('zipCode').value;
-    
-    if (!fullName || !email || !phone || !address || !city || !zipCode) {
-        showCustomAlert('Please fill out all required shipping information.');
-        return false;
-    }
-    
-    const user = getCurrentUser();
-    const purchases = JSON.parse(localStorage.getItem('jdmPurchases') || '{}');
-    
-    if (!purchases[user.email]) {
-        purchases[user.email] = [];
-    }
-    
-    // Create purchase records for each cart item
-    cart.forEach(item => {
-        const purchase = {
-            id: Date.now() + Math.random(),
-            car: item.car,
-            basePrice: item.basePrice || item.price, // Use basePrice if customized
-            quantity: item.quantity,
-            total: item.price * item.quantity,
-            date: new Date().toISOString(),
-            parts: item.parts || [], // Include parts if customized
-            shippingInfo: {
-                name: fullName,
-                email: email,
-                phone: phone,
-                address: address,
-                city: city,
-                zipCode: zipCode
-            },
-            paymentMethod: document.querySelector('input[name="payment"]:checked')?.value || 'credit_card'
-        };
-        purchases[user.email].push(purchase);
-    });
-    
-    localStorage.setItem('jdmPurchases', JSON.stringify(purchases));
-    
-    // Clear cart
-    cart = [];
-    saveCart();
-    updateCartUI();
-    
-    showSuccessAlert('Purchase completed successfully! You will receive a confirmation email shortly.');
-    closeCheckoutModal();
-    
-    // Reload purchase history if we're on a page that shows it
-    loadPurchaseHistory();
-    
-    // Redirect to member page (which should show history)
-    setTimeout(() => {
-        window.location.href = 'member.html';
-    }, 2000);
-    
-    return false;
 }
 
 // Close checkout modal
@@ -1102,7 +1091,7 @@ function closePartsCustomization() {
     }
 }
 
-// Load and display purchase history - NEW FUNCTION
+// Load and display purchase history - UPDATED
 function loadPurchaseHistory() {
     console.log('Loading purchase history...');
     
@@ -1122,7 +1111,7 @@ function loadPurchaseHistory() {
     }
     
     const user = getCurrentUser();
-    const purchases = JSON.parse(localStorage.getItem('jdmPurchases') || '{}');
+    const purchases = storage.getItem('jdmPurchases') || {};
     const userPurchases = purchases[user.email] || [];
     
     console.log('Found purchases for user:', userPurchases.length);

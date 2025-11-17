@@ -44,11 +44,11 @@ function showCustomAlert(message) {
   }
   
   function isLoggedIn() {
-    return localStorage.getItem('jdmLoggedIn') === 'true';
+    return storage.getItem('jdmLoggedIn') === 'true';
   }
   
   function getCurrentUser() {
-    return JSON.parse(localStorage.getItem('jdmCurrentUser') || 'null');
+    return storage.getItem('jdmCurrentUser');
   }
 
   function updateAuthNavigation() {
@@ -79,8 +79,8 @@ function showCustomAlert(message) {
   
   function handleLogout(e) {
     e.preventDefault();
-    localStorage.removeItem('jdmCurrentUser');
-    localStorage.setItem('jdmLoggedIn', 'false');
+    storage.removeItem('jdmCurrentUser');
+    storage.setItem('jdmLoggedIn', 'false');
     showCustomAlert('You have been logged out successfully.');
     setTimeout(() => {
       window.location.href = 'index.html';
@@ -94,7 +94,7 @@ function getUserPurchases() {
   const user = getCurrentUser();
   if (!user) return [];
   
-  const purchases = JSON.parse(localStorage.getItem('jdmPurchases') || '{}');
+  const purchases = storage.getItem('jdmPurchases') || {};
   return purchases[user.email] || [];
 }
 
@@ -103,13 +103,13 @@ function removePurchase(purchaseId) {
   const user = getCurrentUser();
   if (!user) return false;
   
-  let purchases = JSON.parse(localStorage.getItem('jdmPurchases') || '{}');
+  let purchases = storage.getItem('jdmPurchases') || {};
   if (purchases[user.email]) {
     purchases[user.email] = purchases[user.email].filter(
       purchase => purchase.id !== purchaseId
     );
     
-    localStorage.setItem('jdmPurchases', JSON.stringify(purchases));
+    storage.setItem('jdmPurchases', purchases);
     return true;
   }
   return false;
@@ -170,7 +170,7 @@ function getUserProfile() {
     const currentUser = getCurrentUser();
     if (!currentUser) return {};
     
-    const profiles = JSON.parse(localStorage.getItem('jdmUserProfiles') || '{}');
+    const profiles = storage.getItem('jdmUserProfiles') || {};
     return profiles[currentUser.email] || createDefaultProfile(currentUser);
 }
 
@@ -207,9 +207,9 @@ function saveUserProfile(profileData) {
     const currentUser = getCurrentUser();
     if (!currentUser) return false;
     
-    let profiles = JSON.parse(localStorage.getItem('jdmUserProfiles') || '{}');
+    let profiles = storage.getItem('jdmUserProfiles') || {};
     profiles[currentUser.email] = profileData;
-    localStorage.setItem('jdmUserProfiles', JSON.stringify(profiles));
+    storage.setItem('jdmUserProfiles', profiles);
     return true;
 }
 
@@ -242,7 +242,7 @@ window.updateGlobalNavigation = updateGlobalNavigation;
 
 function getCurrentUser() {
     try {
-        return JSON.parse(localStorage.getItem('jdmCurrentUser') || 'null');
+        return storage.getItem('jdmCurrentUser');
     } catch (error) {
         console.error('Error parsing user data:', error);
         return null;
@@ -251,7 +251,7 @@ function getCurrentUser() {
 
 function isLoggedIn() {
     try {
-        return localStorage.getItem('jdmLoggedIn') === 'true' && getCurrentUser() !== null;
+        return storage.getItem('jdmLoggedIn') === 'true' && getCurrentUser() !== null;
     } catch (error) {
         console.error('Error checking login status:', error);
         return false;

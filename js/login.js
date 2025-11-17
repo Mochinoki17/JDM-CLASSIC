@@ -9,12 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        const users = JSON.parse(localStorage.getItem('jdmUsers') || '[]');
+        const users = storage.getItem('jdmUsers') || [];
         const user = users.find(u => u.email === email && u.password === password);
         
         if (user) {
-          localStorage.setItem('jdmCurrentUser', JSON.stringify(user));
-          localStorage.setItem('jdmLoggedIn', 'true');
+          storage.setItem('jdmCurrentUser', user);
+          storage.setItem('jdmLoggedIn', 'true');
           showSuccessAlert('Login successful! Welcome back, ' + user.fullName + '!');
         } else {
           showCustomAlert('Invalid email or password! Please try again or sign up.');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
     // Redirect if already logged in
-    if (localStorage.getItem('jdmLoggedIn') === 'true') {
+    if (storage.getItem('jdmLoggedIn') === 'true') {
       showSuccessAlert('You are already logged in! Redirecting to homepage...');
       setTimeout(() => {
         window.location.href = 'index.html';
@@ -35,6 +35,3 @@ document.addEventListener('DOMContentLoaded', function() {
       updateAuthNavigation();
     }
   });
-
-
-  

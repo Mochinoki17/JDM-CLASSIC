@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const recentPurchasesContainer = document.getElementById('recentPurchasesContainer');
 
     const currentUser = getCurrentUser();
-    const isLoggedIn = localStorage.getItem('jdmLoggedIn') === 'true';
+    const isLoggedIn = storage.getItem('jdmLoggedIn') === 'true';
 
     // Check authentication
     if (!isLoggedIn || !currentUser) {
@@ -45,14 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = this.querySelector('input[type="email"]').value;
             const password = this.querySelector('input[type="password"]').value;
             
-            const users = JSON.parse(localStorage.getItem('jdmUsers') || '[]');
+            const users = storage.getItem('jdmUsers') || [];
             const user = users.find(u => u.email === email && u.password === password);
             
             if (user) {
                 loginModal.style.display = 'none';
                 document.body.classList.remove('modal-active');
-                localStorage.setItem('jdmCurrentUser', JSON.stringify(user));
-                localStorage.setItem('jdmLoggedIn', 'true');
+                storage.setItem('jdmCurrentUser', user);
+                storage.setItem('jdmLoggedIn', 'true');
                 if (welcomeMessage) {
                     welcomeMessage.textContent = `Welcome back, ${user.fullName}!`;
                 }
